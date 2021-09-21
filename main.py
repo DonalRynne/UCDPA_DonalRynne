@@ -4,7 +4,6 @@
 import csv
 import pandas as pd
 import numpy as np
-#import seaborn as sns
 
 
 # Import olympic medals base data & create a key to link other sources
@@ -21,7 +20,7 @@ def get_medals_dict():
 olympic_year_list = [1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012, 2016, 2020]
 
 
-# Extract a GDP figure for the nearest Olympic year
+# Extract GDP figure for the nearest Olympic year
 def get_gdp_dict():
     with open('gdp.csv', mode='r') as infile: #
         next(infile) #skip header
@@ -29,12 +28,13 @@ def get_gdp_dict():
         gdp_dict = {}
         for rows in reader:
             year = get_closest_olympic_year(int(rows[5]))
+            # Treat for alphanumeric data in GDP field on source data
             gdp_dict[tuple([rows[0], year])] = \
                 [(float(rows[7][0:rows[7].index('.') + 3])) if '.' in rows[7] else float(rows[7])]
         return gdp_dict
 
 
-# Extract a Population figure for the nearest Olympic year
+# Extract Population figure for the nearest Olympic year
 def get_pop_dict():
     with open('pop.csv', mode='r') as infile:
         next(infile)
@@ -48,7 +48,7 @@ def get_pop_dict():
         return pop_dict
 
 
-# Create reusable logic to matching up data for olympic years, subject to defined olympic year list
+# Create reusable logic to matching up data for Olympic years, subject to defined Olympic year list
 def get_closest_olympic_year(year):
     count = 0
     while count + 1 < len(olympic_year_list) and year >= olympic_year_list[count + 1]:
@@ -56,7 +56,7 @@ def get_closest_olympic_year(year):
     return olympic_year_list[count]
 
 
-# Write results in useful format to an output .CSV file
+# Write results in useful format to an output CSV file
 def write_results(output_dict):
     dataframe = pd.DataFrame(output_dict)
     dataframe.transpose().to_csv('output.csv')
@@ -105,7 +105,7 @@ def stratify_gdp(gdp):
         return "Tier 1"
 
 
-# combine sources to create a new base file with enriched data
+# Combine all sources to create a new output file with enriched data
 def run():
     gdp = get_gdp_dict()
     pop = get_pop_dict()
@@ -118,18 +118,8 @@ def run():
             output_medals[key] = value
             output_medals[key].extend([merged_dictionaries[key][0], merged_dictionaries[key][1],
                                        stratify_pop(merged_dictionaries[key][0]), stratify_gdp(merged_dictionaries[key][1])])
-
-    #print(get_gdp_dict())
-    #print(get_pop_dict())
-    #print(get_medals_dict())
-    #print(merged_dictionaries)
-    #print(medals)
-
-    #np.array(medals)
-    #write_results(medals)
     np.array(output_medals)
     write_results(output_medals)
-
 
 run()
 
